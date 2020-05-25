@@ -1,0 +1,29 @@
+{% extends 'main/header.html' %}
+
+
+{% block content %}
+
+{% load static %} <!-- This method of serving images is for dev only! -->
+
+    <h3 style="color: green; text-align: center">{{ title }}</h3>
+    <br>
+
+    <!-- Card with an image -->
+    <div class="row">
+        {% for schema in schemas %}
+            <div class="col s12 m6">
+                <div class="card hoverable">
+                    <div class="card-image">
+                        <img src="{{ schema.photo }}" alt="Category image" style="height:20%;">
+                        <span class="card-title">{{schema.schema_name}}</span>
+                        <a href="generic_update/{{schema.schema_name}}/" class="btn-floating halfway-fab waves-effect waves-light red"><i class="material-icons">add</i></a>
+                    </div>
+                    <div class="card-content">
+                        <p>{{schema.schema_name}}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+{% endblock %}

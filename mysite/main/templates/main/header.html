@@ -1,0 +1,61 @@
+<head>
+    {% load static %}
+    
+    <!-- Not currently used -->
+    <!-- <link href="{% static 'tinymce/css/prism.css' %}" rel="stylesheet"> -->
+    
+    <!-- Compiled and minified CSS -->
+    <link href="{% static 'main/css/materialize.css' %}" rel="stylesheet">
+    
+    <!-- Materialize icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    
+    <!-- Custom js. -->
+    <!-- <script src="{% static 'main/js/custom.js' %}"></script> -->
+    
+</head>
+
+
+<body>
+    
+    <!-- For materializecss-form library support - START -->
+    {% block javascript %}
+        <!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script> -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script> 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.1/js/materialize.min.js" integrity="sha256-SrBfGi+Zp2LhAvy9M1bWOCXztRU9Ztztxmu5BcYPcPE=" crossorigin="anonymous"></script>
+    
+        <!-- for materializecss-form library START -->
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.1/js/materialize.min.js" integrity="sha256-SrBfGi+Zp2LhAvy9M1bWOCXztRU9Ztztxmu5BcYPcPE=" crossorigin="anonymous"></script>
+        <script>
+        $(document).ready(function(){
+          // Initialize materialize data picker
+          $('.datepicker').datepicker({'format': 'yyyy-mm-dd'});
+          $('select').formSelect();
+        });
+        </script>
+        <!-- for materializecss-form library END -->
+    
+    {% endblock javascript %}
+    
+    
+    {% include "main/includes/navbar.html" %}
+    {% include "main/includes/messages.html" %}
+    
+    <div class="container" style="min-height: calc(100vh - 285px);">
+        <br>
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    {% include "main/includes/footer.html" %}
+
+</body>
+
+<!-- Not currently using -->
+<!-- <script src="{% static 'tinymce/js/prism.js' %}"></script> -->
+
+<script>M.AutoInit();</script> <!-- This initializes all materialize javascript -->

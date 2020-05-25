@@ -1,0 +1,25 @@
+<nav>
+    <div class="nav-wrapper">
+        <a href="#" class="brand-logo"><i class="material-icons" style="padding-left: 20px;">all_inclusive</i>Generic Data Handler</a>
+        
+        <ul id="nav-mobile" class="right hide-on-med-and-down">    
+            <li>
+                <form action="/search">
+                    <div class="input-field">
+                        <input id="search" type="search" placeholder="Search" name="q" style="color: silver;" required>
+                        <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+                        <i class="material-icons">close</i>
+                    </div>
+                </form>
+            </li>      
+            <li><a href="/"><i class="material-icons" style="padding-left: 0px;">home</i></a></li>
+            {% if user.is_authenticated %}
+                <li><a href="/profile/{{user.username}}" title="{{user.username}}"><i class="material-icons" style="padding-left: 0px;">account_circle</i></a></li>
+                <li><a href="/logout">Logout</a></li>
+            {% else %}
+                <li><a href="/register">Register</a></li>
+                <li><a href="/login">Login</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
