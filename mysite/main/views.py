@@ -38,7 +38,7 @@ def generic_update(request, schema):
     generic_fields = []
     specific_fields = []
     fieldnames = [field.name for field in Schema._meta.get_fields()]
-    # fieldnames.remove("schema_name")
+    fieldnames.remove("schema_description")
     fieldnames.remove("generic")
     for field in fieldnames: 
         fname = getattr(Schema.objects.all().filter(schema_name__exact=schema)[0], field) 

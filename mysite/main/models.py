@@ -12,6 +12,7 @@ from django.conf import settings
     
 class Schema(models.Model):
     schema_name = models.CharField("schema name", max_length=200, blank=False)
+    schema_description = models.CharField("schema_description", max_length=200, blank=True)
     string1 = models.CharField("string1", max_length=200, blank=False)
     string2 = models.CharField("string2", max_length=200, blank=True)
     string3 = models.CharField("string3", max_length=200, blank=True)
