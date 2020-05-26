@@ -19,7 +19,7 @@ from django.contrib.auth.decorators import login_required
 
 def homepage(request):
     context = {}
-    title = "Generic Data Handler Dashboard"
+    title = "Generic Data at Scale Dashboard"
     schemas = Schema.objects.all()
     context["title"] = title
     context["schemas"] = schemas
