@@ -1,0 +1,95 @@
+{% extends 'main/header.html' %}
+
+
+{% load materializecss %}
+
+
+{% block content %}
+
+{% load static %} <!-- This method of serving images is for dev only! -->
+    
+    <!--
+    {{ generic_fields }}
+    <br>
+    {{ specific_fields }}
+    <br>
+    -->
+
+    <h3 style="color: green; text-align: center;">{{ title }}</h3>
+    <br>
+     
+     
+     {% if objects.has_other_pages %}
+    
+        <form method="post">{% csrf_token %}
+            {{ formset.management_form }}
+                
+            <table>
+            
+                <thead>
+                    <tr>
+                        {% for name in specific_fields|slice:"1:-1" %}
+                            <th>{{ name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+            
+                <tbody>
+                    {% for form in formset %}
+                        <tr>
+                            {% for field in form %}
+                                {% if field.name in generic_fields %}
+                                    <td>{{ field }}</td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            
+            </table>
+            
+            <br>
+            <br>
+            
+            <button class="btn waves-effect waves-light" type="submit" name="action">Save
+                <i class="material-icons right">save</i>
+            </button>
+        
+        </form>
+        
+        
+        <ul class="pagination">
+        {% if objects.has_previous %}
+            <li class="waves-effect"><a href="?page=
+                    {{ objects.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i
+                    class="material-icons">chevron_left</i></a></li>
+        {% else %}
+            <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
+        {% endif %}
+        {% for num in objects.paginator.page_range %}
+            {% if objects.number == num %}
+                <li class="active"><a href="#!">{{ num }}</a></li>
+            {% else %}
+                <li class="waves-effect"><a
+                        href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if objects.has_next %}
+            <li class="waves-effect"><a
+                    href="?page={{ objects.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i
+                    class="material-icons">chevron_right</i></a></li>
+        {% else %}
+            <li class="disabled"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+        {% endif %}
+    </ul>
+    
+    {% else %}
+        <p>There are no objects.</p>
+    
+    {% endif %}
+    
+    <br>
+    <br>
+    
+{% endblock %}
+

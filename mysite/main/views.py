@@ -125,7 +125,8 @@ def generic_update_paginate(request, schema):
         context["formset"] = formset
         context["objects"] = objects
         
-        return render(request, "main/generic_update_paginate.html", context)
+        # return render(request, "main/generic_update_paginate.html", context)
+        return render(request, "main/generic_update_paginate_materialize.html", context)
 
 
 def register(request):
