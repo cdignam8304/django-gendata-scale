@@ -1,0 +1,86 @@
+{% extends 'main/header.html' %}
+
+
+{% load materializecss %}
+
+
+{% block content %}
+
+{% load static %} <!-- This method of serving images is for dev only! -->
+    
+    <!--
+    {{ generic_fields }}
+    <br>
+    {{ specific_fields }}
+    <br>
+    -->
+
+    <h3 style="color: green; text-align: center;">{{ title }}</h3>
+    <br>
+     
+     
+     {% if objects %}
+    
+        <form method="post">{% csrf_token %}
+            {{ formset.management_form }}
+                
+            <table>
+            
+                <thead>
+                    <tr>
+                        {% for name in specific_fields|slice:"1:-1" %}
+                            <th>{{ name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+            
+                <tbody>
+                    {% for form in formset %}
+                        <tr>
+                            {% for field in form %}
+                                {% if field.name in generic_fields %}
+                                    <td>{{ field }}</td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            
+            </table>
+            
+            <br>
+            <br>
+            
+            <button class="btn waves-effect waves-light" type="submit" name="action">Save
+                <i class="material-icons right">save</i>
+            </button>
+        
+        </form>
+        
+        
+        <div class="pagination">
+            <span class="step-links">
+                {% if objects.has_previous %}
+                    <a href="?page={{ objects.previous_page_number }}">Previous</a>
+                {% endif %}
+    
+                <span class="current">
+                    Page {{ objects.number }} of {{ objects.paginator.num_pages }}
+                </span>
+    
+                {% if objects.has_next %}
+                    <a href="?page={{ objects.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+        </div>
+    
+    {% else %}
+        <p>There are no objects.</p>
+    
+    {% endif %}
+    
+    <br>
+    <br>
+    
+{% endblock %}
+

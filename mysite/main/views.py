@@ -13,6 +13,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from .forms import NewUserForm
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 # Create your views here.
@@ -27,6 +28,8 @@ def homepage(request):
                   template_name="main/homepage.html",
                   context=context)
 
+
+# NO PAGINATION - NOT CURRENTLY USED AS PAGINATION IS WORKING BELOW
 @login_required(login_url="/login/")
 def generic_update(request, schema):
     context = {}
@@ -66,6 +69,64 @@ def generic_update(request, schema):
     
     return render(request, "main/generic_update.html", context)
     
+
+# WITH PAGINATION 
+@login_required(login_url="/login/")
+def generic_update_paginate(request, schema):
+    context = {}
+    title = f"Edit {schema}"
+    context["title"] = title
+    context["schema"] = schema
+    
+    # Code to get list of fields for an instance of Schema:
+    generic_fields = []
+    specific_fields = []
+    fieldnames = [field.name for field in Schema._meta.get_fields()]
+    fieldnames.remove("schema_description")
+    fieldnames.remove("generic")
+    for field in fieldnames: 
+        fname = getattr(Schema.objects.all().filter(schema_name__exact=schema)[0], field) 
+        if fname != "INACTIVE": 
+            generic_fields.append(field)
+            specific_fields.append(fname)
+    context["generic_fields"] = generic_fields
+    context["specific_fields"] = specific_fields
+    
+    GenericFormset = modelformset_factory(model=Generic, form=Generic_Form, extra=0)
+    
+    if request.method == "POST":    
+        formset = GenericFormset(request.POST)
+        if formset.is_valid():
+            instances = formset.save(commit=False)
+            
+            for instance in instances:
+                instance.save()
+            
+            messages.success(request, f"Records updated")
+            return redirect(f"/generic_update/{schema}/")
+        else:
+            if request.POST: # So don't get error when first load page (GET request)
+                messages.error(request, formset.errors)
+                
+    else:
+        query = Generic.objects.filter(schema_name__schema_name=schema)
+        num_forms_per_page = 3 # for pagination
+        paginator = Paginator(query, num_forms_per_page) # show 10 forms per page
+        page = request.GET.get("page")
+        try:
+            objects = paginator.page(page)
+        except PageNotAnInteger:
+            objects = paginator.page(1)
+        except EmptyPage:
+            objects = paginator.page(paginator.num_pages)
+        page_query = query.filter(id__in=[object.id for object in objects])
+        formset = GenericFormset(queryset=page_query)
+        
+        context["formset"] = formset
+        context["objects"] = objects
+        
+        return render(request, "main/generic_update_paginate.html", context)
+
 
 def register(request):
     
