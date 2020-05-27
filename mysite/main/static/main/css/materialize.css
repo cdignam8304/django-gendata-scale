@@ -2273,10 +2273,12 @@ table {
     text-align: center; }
 
 tr {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12); }
+  /* border-bottom: 1px solid rgba(0, 0, 0, 0.12); } */
+  border-bottom: 0px solid rgba(0, 0, 0, 0.12); }
 
 td, th {
-  padding: 15px 5px;
+/* padding: 15px 5px; */
+  padding: 0px 5px;
   display: table-cell;
   text-align: left;
   vertical-align: middle;
