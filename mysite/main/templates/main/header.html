@@ -13,6 +13,13 @@
     <!-- Compiled and minified JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     
+    <!-- DataTable CSS -->
+    <link href="//cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
+    
+    <!-- DataTable JavaScript -->
+    <script src="//cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    
+    
     <!-- Custom js. -->
     <!-- <script src="{% static 'main/js/custom.js' %}"></script> -->
     
@@ -21,6 +28,7 @@
 
 <body>
     
+    <!-- 
     <!-- For materializecss-form library support - START -->
     {% block javascript %}
         <!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script> -->
@@ -38,9 +46,8 @@
         });
         </script>
         <!-- for materializecss-form library END -->
-    
     {% endblock javascript %}
-    
+    -->
     
     {% include "main/includes/navbar.html" %}
     {% include "main/includes/messages.html" %}
@@ -59,4 +66,8 @@
 <!-- Not currently using -->
 <!-- <script src="{% static 'tinymce/js/prism.js' %}"></script> -->
 
-<script>M.AutoInit();</script> <!-- This initializes all materialize javascript -->
+<script>
+    
+    M.AutoInit();
+
+</script> <!-- This initializes all materialize javascript -->
