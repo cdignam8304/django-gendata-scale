@@ -1,13 +1,16 @@
 {% extends "main/header.html" %}
 
 {% block content %}
-
+    
+    <h3 style="color: #81C784;">{{title}}</h3>
+    <br>
+    
     <form method="POST">
     
         {% csrf_token %} <!-- provides defence against Cross Site Request Forgery. Use for all forms -->
         {{form.as_p}} <!-- We create the actual form in django in views.py -->
         
-        <button class="btn" style="background-color: yellow; color: blue;" type="submit">register</button>
+        <button class="btn" style="background-color: #81C784; color: white;" type="submit">register</button>
         
     </form>
 

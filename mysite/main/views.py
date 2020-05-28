@@ -20,7 +20,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def homepage(request):
     context = {}
-    title = "Generic Data at Scale Dashboard"
+    title = "Dashboard"
     schemas = Schema.objects.all()
     context["title"] = title
     context["schemas"] = schemas
@@ -74,7 +74,7 @@ def generic_update(request, schema):
 @login_required(login_url="/login/")
 def generic_update_paginate(request, schema):
     context = {}
-    title = f"Edit {schema}"
+    title = f"Edit {schema}s"
     context["title"] = title
     context["schema"] = schema
     
@@ -110,7 +110,7 @@ def generic_update_paginate(request, schema):
                 
     else:
         query = Generic.objects.filter(schema_name__schema_name=schema)
-        num_forms_per_page = 3 # for pagination
+        num_forms_per_page = 8 # for pagination
         paginator = Paginator(query, num_forms_per_page) # show 10 forms per page
         page = request.GET.get("page")
         try:
@@ -130,7 +130,8 @@ def generic_update_paginate(request, schema):
 
 
 def register(request):
-    
+    context = {}
+    title = "Register"
     if request.method == "POST":
         form = NewUserForm(request.POST)
         if form.is_valid(): # check the form filled out correctly
@@ -147,9 +148,12 @@ def register(request):
                 messages.error(request, f"{msg}: {form.error_messages[msg]}")
 
     form = NewUserForm
+    context["title"] = title
+    context["form"] = form
+    
     return render(request=request, # This handles the default GET request
                   template_name="main/register.html",
-                  context={"form": form})
+                  context=context)
 
 
 def logout_request(request):
