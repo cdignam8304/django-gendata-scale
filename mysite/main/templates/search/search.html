@@ -1,0 +1,47 @@
+{% extends "main/header.html" %}
+
+{% block content %}
+
+    <!-- Experiment to pass extra_context. It works! -->
+    <!--
+    {% for i in extra %}
+        <p>{{ i }}</p>
+    {% endfor %}
+    -->
+
+    {% if query %}
+        <h4 style="color: silver; text-align: center;">Results for: <strong>{{ query }}</strong></h4>
+        <br>
+        
+        <ul>
+            {% for result in page.object_list %}
+                <li>
+                    <div>{{ result.object.string1 }}</div>
+                </li>
+            {% empty %}
+                <li>
+                    <div>NO RESULTS!</div>
+                </li>
+            {% endfor %}
+        </ul>
+
+        
+        <br>
+        {% if page.has_previous or page.has_next %}
+            <div>
+                {% if page.has_previous %}<a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">{% endif %}&laquo; Previous{% if page.has_previous %}</a>{% endif %}
+                |
+                {% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% endif %}Next &raquo;{% if page.has_next %}</a>{% endif %}
+            </div>
+            <br>
+        {% endif %}
+        
+    {% else %}
+        {# Show some example queries to run, maybe query syntax, something else? #}
+        
+        
+    {% endif %}
+        
+
+    
+{% endblock %}
