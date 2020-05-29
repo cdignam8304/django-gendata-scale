@@ -6,8 +6,8 @@ from .models import Generic
 # https://stackoverflow.com/questions/2395675/whoosh-index-viewer
 
 class GenericIndex(indexes.SearchIndex, indexes.Indexable):
+    
     text = indexes.CharField(document=True, use_template=True)
-
     string1_auto = indexes.NgramField(model_attr="string1")
     string2_auto = indexes.NgramField(model_attr="string2")
     string3_auto = indexes.NgramField(model_attr="string3")

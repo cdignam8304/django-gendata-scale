@@ -51,7 +51,7 @@ class NewUserForm(UserCreationForm):
         return user
 
 
-class AutocompleteSearchForm(SearchForm):
+class AutocompleteSearchForm(SearchForm): # Haystack SearchForm
 
     def search(self):
         query = self.cleaned_data["q"]
