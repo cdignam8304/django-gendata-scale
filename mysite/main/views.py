@@ -14,8 +14,9 @@ from django.contrib.auth.models import User
 from .forms import NewUserForm
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from haystack.views import search_view_factory, SearchView
-from .forms import AutocompleteSearchForm
+from haystack.views import search_view_factory
+from haystack.generic_views import SearchView
+from haystack.forms import SearchForm
 
 
 # Create your views here.
@@ -206,19 +207,7 @@ def get_user_profile(request, username):
         return redirect("main:homepage")
 
 
-
-# Experiment to try to pass extra_context: IT WORKS!
-class MySearchView(SearchView):
-    def extra_context(self):
-        return {"extra": [1,2,3,4]}
-
-
-# Custom search function using custom search form
-def search(request):
-    view = search_view_factory(
-        # view_class=SearchView, # experiment to try to pass extra_context
-        view_class=MySearchView, # experiment to try to pass extra_context: IT WORKS!
-        template='search/search.html',
-        form_class=AutocompleteSearchForm,
-        )
-    return view(request)
+class BasicSearchView(SearchView):
+    form = SearchForm()
+    template_name = "main/generic_update_paginate_materialize.html"
+    

@@ -51,22 +51,25 @@ class NewUserForm(UserCreationForm):
         return user
 
 
-class AutocompleteSearchForm(SearchForm): # Haystack SearchForm
+# class AutocompleteSearchForm(SearchForm): # Haystack SearchForm
 
-    def search(self):
-        query = self.cleaned_data["q"]
+#     def search(self):
+#         query = self.cleaned_data["q"]
         
-        if not self.is_valid():
-            return self.no_query_found()
-        if not query:
-            return self.no_query_found() 
+#         if not self.is_valid():
+#             return self.no_query_found()
+#         if not query:
+#             return self.no_query_found() 
         
-        # sqs = self.searchqueryset.filter(content=query) # Gets results from all indexed fields in all models BUT no partial text search. Full words, which behaves more like EdgeNgramField(?) NB: "content" is a special field in haystack to reference all fields/models in index.
-        sqs = self.searchqueryset.filter(content=query).models(Generic) # as above but only specific model passed. Stemming is implemented by default so should be able to search for "train" to return trains.
+#         # sqs = self.searchqueryset.filter(content=query) # Gets results from all indexed fields in all models BUT no partial text search. Full words, which behaves more like EdgeNgramField(?) NB: "content" is a special field in haystack to reference all fields/models in index.
+#         sqs = self.searchqueryset.filter(content=query).models(Generic) # as above but only specific model passed. Stemming is implemented by default so should be able to search for "train" to return trains.
 
-        if self.load_all:
-            sqs = sqs.load_all()
+#         if self.load_all:
+#             sqs = sqs.load_all()
 
-        return sqs
+#         return sqs
+
+
+
 
 
