@@ -35,6 +35,10 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
+# Automatically re-index objects after update so index stays in sync with database
+# https://django-haystack.readthedocs.io/en/v2.4.1/migration_from_1_to_2.html?highlight=realtimesearchindex#removal-of-realtimesearchindex
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
 
 # Application definition
 
