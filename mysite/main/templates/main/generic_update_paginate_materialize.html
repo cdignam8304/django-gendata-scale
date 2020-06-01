@@ -8,8 +8,8 @@
 
 {% load static %} <!-- This method of serving images is for dev only! -->
     
-    {% if query %}
-        <p>Searching for: <strong>{{ query }}</strong></p>
+    {% if search_string %}
+        <p>Filtered on: <strong>"{{ search_string }}"</strong></p>
     {% endif %}
 
     <h4 style="color: #81C784; text-align: center;">{{ title }}</h4>
@@ -82,9 +82,49 @@
     </ul>
     
     {% else %}
-        <p>There are no objects.</p>
-    
+        <!-- <p>There are no objects.</p> -->
+        
+        <!-- TRY THIS -->
+        <form method="post">{% csrf_token %}
+            {{ formset.management_form }}
+                
+            <table class="highlight" style="width: 100%;">
+            
+                <thead style="background-color: #42b9f5; color: white; font-size: 12px;">
+                    <tr>
+                        {% for name in specific_fields|slice:"1:-1" %}
+                            <th style="font-weight: normal;">{{ name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+            
+                <tbody>
+                    {% for form in formset %}
+                        <tr>
+                            {% for field in form %}
+                                {% if field.name in generic_fields %}
+                                    <td>{{ field }}</td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            
+            </table>
+            
+            <br>
+            <br>
+            
+            <button class="btn waves-effect waves-light" type="submit" name="action" style="background-color: #42b9f5;">Save
+                <i class="material-icons right">save</i>
+            </button>
+        
+        </form>
+        
+        
+        
     {% endif %}
+    
     
     <br>
     <br>

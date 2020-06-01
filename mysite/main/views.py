@@ -82,17 +82,9 @@ def generic_update_paginate(request, schema):
     context["title"] = title
     context["schema"] = schema
     
-    query = request.GET.get("q")
-    context["query"] = query
-    if query:
-        print(f"The query is: {query}")
-        sqs = SearchQuerySet().filter(content__icontains=query)
-        for result in sqs:
-            print(result)
-    
-    
-    
-    
+    search_string = request.GET.get("q") # Check if user filtering the table
+    context["search_string"] = search_string
+        
     # Code to get list of fields for an instance of Schema:
     generic_fields = []
     specific_fields = []
@@ -124,7 +116,12 @@ def generic_update_paginate(request, schema):
                 messages.error(request, formset.errors)
                 
     else:
-        query = Generic.objects.filter(schema_name__schema_name=schema)
+        if search_string: # if search
+            sqs = SearchQuerySet().filter(content__icontains=search_string).models(Generic).load_all() # haystack object
+            sqs_ids = [result.object.id for result in sqs]
+            query = Generic.objects.filter(schema_name__schema_name=schema).filter(id__in=sqs_ids) # django object
+        else: # no search
+            query = Generic.objects.filter(schema_name__schema_name=schema)
         num_forms_per_page = 8 # for pagination
         paginator = Paginator(query, num_forms_per_page) # show 10 forms per page
         page = request.GET.get("page")
@@ -140,7 +137,6 @@ def generic_update_paginate(request, schema):
         context["formset"] = formset
         context["objects"] = objects
         
-        # return render(request, "main/generic_update_paginate.html", context)
         return render(request, "main/generic_update_paginate_materialize.html", context)
 
 
