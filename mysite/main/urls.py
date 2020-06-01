@@ -23,7 +23,7 @@ app_name = "main" # used for creating custom urls, so don't have to hard code ur
 
 urlpatterns = [
     path("", views.homepage, name="homepage"),
-    # path("generic_update/<schema>/", views.generic_update, name="generic_update"), # no pagination
+    path("generic_update/Report/", views.reports, name="reports"),
     path("generic_update/<schema>/", views.generic_update_paginate, name="generic_update_paginate"), # with pagination
     path("register/", views.register, name="register"),
     path("logout/", views.logout_request, name="logout"), # we use logout_request as their is a django method called logout that we already imported!

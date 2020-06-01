@@ -1,7 +1,7 @@
 from django.shortcuts import render
 # from django.http import HttpResponse
 # from .models import Contact
-from .models import Generic, Schema
+from .models import Generic, Schema, Report
 # from .forms import Contact_Form
 from .forms import Generic_Form
 # from django.forms import formset_factory
@@ -31,47 +31,6 @@ def homepage(request):
     return render(request=request,
                   template_name="main/homepage.html",
                   context=context)
-
-
-# NO PAGINATION - NOT CURRENTLY USED AS PAGINATION IS WORKING BELOW
-@login_required(login_url="/login/")
-def generic_update(request, schema):
-    context = {}
-    title = f"Edit {schema}"
-    context["title"] = title
-    context["schema"] = schema
-    
-    # Code to get list of fields for an instance of Schema:
-    generic_fields = []
-    specific_fields = []
-    fieldnames = [field.name for field in Schema._meta.get_fields()]
-    fieldnames.remove("schema_description")
-    fieldnames.remove("generic")
-    for field in fieldnames: 
-        fname = getattr(Schema.objects.all().filter(schema_name__exact=schema)[0], field) 
-        if fname != "INACTIVE": 
-            generic_fields.append(field)
-            specific_fields.append(fname)
-    context["generic_fields"] = generic_fields
-    context["specific_fields"] = specific_fields
-    
-    GenericFormset = modelformset_factory(model=Generic, form=Generic_Form, extra=1)
-    formset = GenericFormset(request.POST or None, queryset=Generic.objects.filter(schema_name__schema_name=schema))
-    if formset.is_valid():
-        instances = formset.save(commit=False)
-        
-        for instance in instances:
-            instance.save()
-        
-        messages.success(request, f"Records updated")
-        return redirect(f"/generic_update/{schema}/")
-    else:
-        if request.POST: # So don't get error when first load page (GET request)
-            messages.error(request, formset.errors)
-    
-    context["formset"] = formset
-    
-    return render(request, "main/generic_update.html", context)
     
 
 # WITH PAGINATION 
@@ -215,4 +174,19 @@ def get_user_profile(request, username):
         return redirect("main:homepage")
 
 
+@login_required(login_url="/login/")
+def reports(request):
+    context = {}
+    title = "Reports"
+    context["title"] = title
     
+    reports = Report.objects.all()
+    context["reports"] = reports
+    
+    return render(request=request,
+                  template_name="main/reports.html",
+                  context=context)
+
+
+
+

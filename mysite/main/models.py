@@ -107,3 +107,16 @@ class Generic(models.Model):
         return f"{self.schema_name}: {self.string1}"
     
     
+
+class Report(models.Model):
+    name = models.CharField("name", max_length=200, blank=False)
+    description = models.CharField("description", max_length=200, blank=False)
+    
+    class Meta():
+        verbose_name_plural = "Reports"
+        
+    def __str__(self):
+        return f"{self.name}: {self.description}"
+    
+
+
