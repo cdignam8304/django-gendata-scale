@@ -12,7 +12,7 @@
         <div class="col s12">
             <ul class="tabs">
                 {% for report in reports %}
-                    <li class="tab col s3"><a href="#" style="color: #42b9f5;">{{ report.description }}</a></li>
+                    <li class="tab col s3"><a href="{{ report.name }}/" style="color: #42b9f5;">{{ report.description }}</a></li>
                 {% endfor %}
                 <li class="tab col s3"><a class="active" href="#" style="color: #42b9f5;">Test</a></li>
                 <li class="tab col s3 disabled"><a href="#" style="color: gray;">Disabled Tab</a></li>
