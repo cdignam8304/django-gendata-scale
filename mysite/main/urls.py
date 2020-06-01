@@ -29,7 +29,6 @@ urlpatterns = [
     path("logout/", views.logout_request, name="logout"), # we use logout_request as their is a django method called logout that we already imported!
     path("login/", views.login_request, name="login"), # use login_request for same reason as above
     path("profile/<username>/", views.get_user_profile, name="username"),
-    path("search/", views.BasicSearchView.as_view()), # custom search view in views.py
 ]
 
 urlpatterns += staticfiles_urlpatterns()

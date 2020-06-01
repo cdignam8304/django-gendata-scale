@@ -14,9 +14,10 @@ from django.contrib.auth.models import User
 from .forms import NewUserForm
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from haystack.views import search_view_factory
-from haystack.generic_views import SearchView
-from haystack.forms import SearchForm
+# from haystack.views import search_view_factory
+# from haystack.generic_views import SearchView
+# from haystack.forms import SearchForm
+from haystack.query import SearchQuerySet
 
 
 # Create your views here.
@@ -83,6 +84,14 @@ def generic_update_paginate(request, schema):
     
     query = request.GET.get("q")
     context["query"] = query
+    if query:
+        print(f"The query is: {query}")
+        sqs = SearchQuerySet().filter(content__icontains=query)
+        for result in sqs:
+            print(result)
+    
+    
+    
     
     # Code to get list of fields for an instance of Schema:
     generic_fields = []
@@ -210,7 +219,4 @@ def get_user_profile(request, username):
         return redirect("main:homepage")
 
 
-class BasicSearchView(SearchView):
-    form = SearchForm()
-    template_name = "main/generic_update_paginate_materialize.html"
     
