@@ -8,12 +8,9 @@
 
 {% load static %} <!-- This method of serving images is for dev only! -->
     
-    <!--
-    {{ generic_fields }}
-    <br>
-    {{ specific_fields }}
-    <br>
-    -->
+    {% if query %}
+        <p>Searching for: <strong>{{ query }}</strong></p>
+    {% endif %}
 
     <h4 style="color: #81C784; text-align: center;">{{ title }}</h4>
     <br>

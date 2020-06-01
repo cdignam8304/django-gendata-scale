@@ -81,6 +81,9 @@ def generic_update_paginate(request, schema):
     context["title"] = title
     context["schema"] = schema
     
+    query = request.GET.get("q")
+    context["query"] = query
+    
     # Code to get list of fields for an instance of Schema:
     generic_fields = []
     specific_fields = []
