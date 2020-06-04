@@ -28,12 +28,25 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Haystack with Whoosh
+# HAYSTACK_CONNECTIONS = {
+#     'default': {
+#         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+#         'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+#     },
+# }
+
+# Haystack with ElasticSearch
+# https://phoenixnap.com/kb/install-elasticsearch-ubuntu
 HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
-    },
-}
+              'default': {
+                    'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+                    'URL': 'http://127.0.0.1:9200/',
+                    'INDEX_NAME': 'haystack_generic',
+              },
+    }
+
+
 
 # Automatically re-index objects after update so index stays in sync with database
 # https://django-haystack.readthedocs.io/en/v2.4.1/migration_from_1_to_2.html?highlight=realtimesearchindex#removal-of-realtimesearchindex
@@ -88,11 +101,22 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'postgres',
+            'USER': 'postgres',
+            'PASSWORD': 'postgres',
+            'HOST': 'localhost',
+            'PORT': '5432',
+    }    
 }
 
 

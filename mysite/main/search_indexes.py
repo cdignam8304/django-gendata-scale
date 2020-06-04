@@ -5,6 +5,11 @@ from .models import Generic
 # Check out this page for querying the whoosh_index!
 # https://stackoverflow.com/questions/2395675/whoosh-index-viewer
 
+# Elasticsearch installation and running (version 2.4.6 required as later version not supported by haystack)
+# nb: requires jdk v8
+# https://www.elastic.co/guide/en/elasticsearch/reference/7.1/targz.html
+
+
 class GenericIndex(indexes.SearchIndex, indexes.Indexable):
     
     text = indexes.CharField(document=True, use_template=True)

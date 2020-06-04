@@ -1,0 +1,1538 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Mar 25 11:23:59 2020
+
+@author: SESA530398
+"""
+
+1. pip install django==2.1.4 --user # NO! USE AT LEAST 2.1.5 TO AVOID SQLITE ISSUE!!!
+(nb: should use latest version, but used this for tutorial)
+*** ENSURE USE LATEST VERSION BEFORE DEPLOYMENT! ***
+
+2. add django-admin.exe folder location to path
+Now can run django-admin from command line.
+
+3. from command line, run: django-admin startproject mysite
+(nb: mysite is the folder for your website, which will contain a collection
+of applications, e.g. a website, a blog etc.)
+(In the mysite project folder, there will be another mysite folder, which is
+the primary app of the project. The role of the primary app is to link the
+other apps together).
+
+4. Now we will create the first real app (called "main") in the project:
+In the mysite project folder, there is a helper app called "manage.py"
+Run: python manage.py startapp main
+(make sure using the right versio of python! May need to use full path. Safer
+to run this from Anaconda prompt.)
+
+5. Now lets start the development version of our webserver:
+Open a new Ananconda prompt, navigate to project folder, then run
+Run: python manage.py runserver
+We will leave this running during the tutorial
+By default, will open at localhost:8000
+Navigage with browser to check running.
+We can ignore the messages about unapplied migrations on the command line for now. We 
+will come back to that later.
+
+6. Django works with the MODEL, VIEW, CONTROLLER framework.
+- CONTROLLER: takes the url entered and maps it to a VIEW
+- VIEW returns the template
+- MODELs are the way the website gets to interract with the data in our database.
+VIEW often interfaces witH MODELs.
+But for a simple static website, we just need a CONTROLLER and a VIEW, without MODELs.
+The database may contain, inter alia:
+- users (names, passwords etc)
+- content for the site
+- content metadata
+
+7. Now we need to create a urls.py inside the main application.
+We can just make a copy of the urls.py in mysite folder and put it in the 
+main folder. (Not sure why this not created by default.)
+
+8. Open the urls.py file in the mysite folder.
+When someone visits our site, this is the first urls.py that gets checked for
+a match, so there needs to be a match. This needs to redirect to another app.
+Add this into the urlpatterns list: path("", include("main.urls")),
+(Don't forget to import 'include' library as well).
+This directs to the main app urls.py script.
+
+9. Open the urls.py file in the main folder.
+Make the file look like the following:
+----
+
+from django.urls import path
+from . import views
+
+app_name = "main" # used for creating custom urls, so don't have to hard code urls
+
+urlpatterns = [
+    path("", views.homepage, name="homepage"),
+]
+
+----
+
+10. Now open the views.py file in the main folder.
+Here we need to create the content of the homepage.
+Make the file look like the following.
+Afterwards, refresh the browser to see the new content!
+
+----
+
+from django.shortcuts import render
+from django.http import HttpResponse
+
+# Create your views here.
+def homepage(request):
+    return HttpResponse("Wow this is an <strong>awesome</strong> website!")
+
+----
+
+11. Go to the "main" app folder and open models.py
+This is where we create tables for the database that can store the content,
+user information, etc.
+
+Create the Tutorial model (class). See models.py file for example.
+
+
+12. After making a new model OR changing an existing one (i.e. create a new 
+database table or modify an existing one), we have to do the following 2 things
+in django:
+- makemigrations (this prepares the migrations)
+- migrate
+BUT....
+First, because this is a new app, we can't run these steps yet. First we have
+to "install" the app to allow us to add tables to the database, as follows...
+
+13. Open settings.py in the mysite folder
+Go to the INSTALLED_APPS list and add the new app, as follows:
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'main.apps.MainConfig',
+]
+
+14. Now we can run the makemigrations and migrate steps mentioned above:
+From the top level mysite folder, run:
+- python manage.py makemigrations
+- python manage.py migrate
+
+15. Now we have a database table for our tutorials we can populate it.
+Lets add a tutorial to the table using the interactive console provided by
+django:
+
+From the Anaconda prompt:
+python manage.py shell # to get the interactive console
+In [1]: from main.models import Tutorial
+In [2]: from django.utils import timezone
+In [3]: Tutorial.objects.all()
+Out[3]: <QuerySet []> # There are currently no records in the table
+In [4]: new_tutorial = Tutorial(tutorial_title="To be", tutorial_content="...or not to be", tutorial_published=timezone
+   ...: .now())
+In [5]: new_tutorial.save() # Equivalent to SQL commit
+In [6]: Tutorial.objects.all()
+Out[6]: <QuerySet [<Tutorial: To be>]> # We have our first tutorial record!
+
+We can also iterate over the Tutorials as follows:
+In [7]: for t in Tutorial.objects.all():
+   ...:     print(t.tutorial_title)
+   ...:
+To be
+
+
+ADMIN MODULE
+============
+
+16. Create a superuser:
+Run: python manage.py createsuperuser
+We'll enter the following credentials for this site:
+- username: superman
+- email: christopher.dignam@se.com (this is to receive reports when we aren't running in debug mode)
+- password: tutorial
+
+Now we can navigate to the website's admin page:
+localhost:8000/admin
+
+17. To update user details, run the following:
+(for some reason, editing the user through the admin page of website causes error)
+$ python manage.py shell
+> from django.contrib.auth.models import User
+> user = User.objects.get(username=<superuser's username>) #or email=<email>
+> user.first_name = 'first_name'
+> user.last_name = 'last_name'
+> user.username = 'username' #make sure it is unique
+> user.save()
+
+
+18. You will notice that our model "Tutorial" does not currently appear in the admin module.
+To make it appear, we need to register it, as follows:
+
+In the main folder, open admin.py and make it look like this:
+---
+from django.contrib import admin
+from .models import Tutorial
+
+# Register your models here.
+
+admin.site.register(Tutorial)
+---
+
+Now go back to admin page on website and refresh. The Tutorials model should appear.
+(note django added an 's'. Our model is called 'Tutorial', but here its called 'Tutorials').
+
+
+19. Customizing the Admin page
+
+Let's customize how the Tutorial model is displayed through the admin web page:
+
+a) change the order of the fields (make tutorial_published the 2nd field)
+Change the admin.py file as follows, using "fields":
+
+---
+from django.contrib import admin
+from .models import Tutorial
+
+# Register your models here.
+
+class TutorialAdmin(admin.ModelAdmin):
+    fields = [
+        "tutorial_title",
+        "tutorial_published",
+        "tutorial_content",
+        ]
+
+admin.site.register(Tutorial, TutorialAdmin)
+---
+Refresh the admin site to see the change.
+
+b) Create groups of fields, using "fieldsets"
+
+---
+from django.contrib import admin
+from .models import Tutorial
+
+# Register your models here.
+
+class TutorialAdmin(admin.ModelAdmin):
+    
+    fieldsets = [
+            ("Title/date", {"fields":["tutorial_title", "tutorial_published"]}),
+            ("Content", {"fields":["tutorial_content"]})
+        ]
+
+admin.site.register(Tutorial, TutorialAdmin)
+---
+Refresh the admin site to see the change.
+
+c) Lets add a default value to the date field:
+
+go to the Tutorial class in models.py and change the tutorial_published field as follows:
+---
+from django.db import models
+from datetime import datetime # THIS IS NEW
+
+# Create your models here. A model maps to a database table.
+class Tutorial(models.Model): # Tutorial inherits from the class models.Model
+    
+    # Create columns for the Tutorial table https://docs.djangoproject.com/en/3.0/ref/models/fields/
+    # A primary key is created by default, although we could set it to be one of the fields
+    # below if we wanted to.
+    tutorial_title = models.CharField(max_length=200) # used for short strings, e.g. categories
+    tutorial_content = models.TextField() # used for longer text
+    tutorial_published = models.DateTimeField("date published", default=datetime.now()) # THIS IS UPDATED
+    
+    def __str__(self):
+        return self.tutorial_title # This is what gets return when we print the instance
+---
+
+As this is a change to a model, we then need to run makemigrations and migrate.
+
+
+
+20. Install another django app into our app
+
+Now we will install a prebuilt django text editor app into our admin page for the
+tutorial_content field. This app will override the attributes of a text field to
+turn it into an editor:
+NB: we will ONLY apply this override of the text field in the admin module, as 
+we don't want to replace all text fields in our app with an editor!
+
+- We will use TinyMCE. First we need to install it: pip install django-tinymce4-lite
+- Now we need to add it to our list of installed apps. So, in mysite\settings.py...
+---
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'main.apps.MainConfig',
+    'tinymce',
+]
+---
+Then, also in settings.py, we will add config settings for tinymce, on the line after
+the "ALLOWED_HOSTS" setting:
+(See here for more details on tinymce config:
+http://romanvm.github.io/django-tinymce4-lite/configuration.html)
+---
+TINYMCE_DEFAULT_CONFIG = {
+    'height': 360,
+    'width': 1120,
+    'cleanup_on_startup': True,
+    'custom_undo_redo_levels': 20,
+    'selector': 'textarea',
+    'theme': 'modern',
+    'plugins': '''
+            textcolor save link image media preview codesample contextmenu
+            table code lists fullscreen  insertdatetime  nonbreaking
+            contextmenu directionality searchreplace wordcount visualblocks
+            visualchars code fullscreen autolink lists  charmap print  hr
+            anchor pagebreak
+            ''',
+    'toolbar1': '''
+            fullscreen preview bold italic underline | fontselect,
+            fontsizeselect  | forecolor backcolor | alignleft alignright |
+            aligncenter alignjustify | indent outdent | bullist numlist table |
+            | link image media | codesample |
+            ''',
+    'toolbar2': '''
+            visualblocks visualchars |
+            charmap hr pagebreak nonbreaking anchor |  code |
+            ''',
+    'contextmenu': 'formats | link image',
+    'menubar': True,
+    'statusbar': True,
+    }
+---
+
+Now we need to go to the mysite\urls.py and add tinymce to the list of urlpatterns
+so that our app can point to tinymce:
+---
+urlpatterns = [
+    path("", include("main.urls")), # empty path is homepage, so this will send them to main app, urls.py
+    path("admin/", admin.site.urls),
+    path("tinymce/", include("tinymce.urls")), # NEW LINE
+]
+---
+
+Now we need to update main\admin.py as follows:
+---
+from django.contrib import admin
+from .models import Tutorial
+from tinymce.widgets import TinyMCE # NEW LINE
+from django.db import models # NEW LINE
+
+# Register your models here.
+
+class TutorialAdmin(admin.ModelAdmin):
+    
+    fieldsets = [
+            ("Title/date", {"fields":["tutorial_title", "tutorial_published"]}),
+            ("Content", {"fields":["tutorial_content"]})
+        ]
+    
+    # NEW PARAMETER
+    formfield_overrides = {
+            models.TextField: {"widget": TinyMCE()}
+        }
+
+admin.site.register(Tutorial, TutorialAdmin)
+---
+
+
+21. Updating the content and look & feel of the homepage
+
+a) Let's start by iterating over the tutorials and showing them on the hompage:
+
+- First we have to update the main\views.py file to render a template instead
+of rendering raw html like we had earlier:
+---
+from django.shortcuts import render # to render a template
+from django.http import HttpResponse # to render raw HTML
+from.models import Tutorial
+
+# Create your views here.
+def homepage(request):
+    
+    # page_content = """
+    #     <center><h1>Chris's first Django Website!</h1></center>
+    #     <p><center>Isn't it <strong>AWESOME?</strong></center></p>
+    #     <p><center>More awesome content coming soon!</center></p>
+    # """
+    
+     # return HttpResponse(page_content)
+     
+     return render(request=request, # to be able to reference things like user details etc
+                   template_name="main/home.html", # where to find the template to be rendered
+                   context={"tutorials": Tutorial.objects.all}) # tutorials is variable name passed to template
+---
+
+- Now we need to create a folder for our templates as follows:
+main\templates\main\
+(we add an extra main folder inside templates to avoid name overlap issues)
+- Then create a new file for the template...here we are creating home.html
+To start, we can just enter text or raw html into this template as follows:
+---
+<p>Here is my new homepage!</p>
+
+<p>Isn't it <strong>cool</strong>?</p>
+---
+Refresh the homepage in the browser to see the updated page.
+
+
+b) Now let's display our tutorials content on our new homepage template:
+Note: the template syntax is somewhat similar to jinja2. So we use the following:
+
+{{ variable_name }} - for variables
+
+{% for x in y %} - for logic, e.g. for loops
+{% endfor %}
+
+{{x|safe}} - the safe parameter tells the browser to render per original content format
+(do not use this e.g. on a forum where someone could enter malicious javascript!)
+
+- We also want to use the tinymce css to style the code snippets in our tutorials
+and we will use the tinymce javascript to format the code font and colors.
+
+---
+<head>
+    {% load static %}
+    <link href="{% static 'tinymce/css/prism.css' %}" rel="stylesheet">
+</head>
+
+
+<body>
+    {% for tut in tutorials %}
+        <p>{{ tut.tutorial_title }}</p>
+        <p>{{ tut.tutorial_published }}</p>
+        <p>{{ tut.tutorial_content|safe }}</p>
+        <br><br>
+    {% endfor %}
+</body>
+
+<script src="{% static 'tinymce/js/prism.js' %}"></script>
+---
+
+c) That's ok, but now lets use a css / js framework to make the look n feel better:
+We will use https://materializecss.com/
+
+To use it, and format our content on the page as cards, make the home.html file
+look like the following:
+
+---
+
+<head>
+    {% load static %}
+    <link href="{% static 'tinymce/css/prism.css' %}" rel="stylesheet">
+    
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script> 
+</head>
+
+<body>
+
+    <div class="row">
+        {% for tut in tutorials %}
+            <div class="col s12 m6 l4">
+                <div class="card blue-grey darken-1">
+                    <div class="card-content white-text">
+                        <span class="card-title">{{tut.tutorial_title}}</span>
+                        <p style="font-size: 70%">{{tut.tutorial_published}}</p>
+                        <p>{{tut.tutorial_content|safe}}</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="#">Visit</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+
+</body>
+
+<script src="{% static 'tinymce/js/prism.js' %}"></script>
+---
+
+d) Now, we'll add a nav bar. So, update home.html as follows:
+
+---
+
+<head>
+    {% load static %}
+    <link href="{% static 'tinymce/css/prism.css' %}" rel="stylesheet">
+    
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script> 
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-wrapper">
+            <a href="#" class="brand-logo">Tutorials!</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li><a href="/">Home</a></li>
+                <li><a href="/register">Register</a></li>
+                <li><a href="/login">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+
+    <div class="row">
+        {% for tut in tutorials %}
+            <div class="col s12 m6 l4">
+                <div class="card blue-grey darken-1">
+                    <div class="card-content white-text">
+                        <span class="card-title">{{tut.tutorial_title}}</span>
+                        <p style="font-size: 70%">{{tut.tutorial_published}}</p>
+                        <p>{{tut.tutorial_content|safe}}</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="#">Visit</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+
+</body>
+
+<script src="{% static 'tinymce/js/prism.js' %}"></script>
+
+---
+
+
+
+22. Using "Extends" and "Include" to avoid duplication of code for consistent formatting
+accross different templates / pages.
+
+a) First make a copy of our home.html, in same folder, and rename it "header.html"
+We could call it something else, but its not important.
+This file will contain the standard formats and will be referred to by other templates.
+
+b) Now, in header.html, delete anything that was unique to the homepage (in this case
+we delete the stuff in <div class="row"> and the subsequent for loop).
+NB: We leave the Nav bar in body section of header.html as this is part of the standard
+format we want to apply across all pages.
+
+c) Now insert the special "block content" and "endblock" lines. This is where anything
+that "Extends" this header file will appear!
+
+d) Now we can remove all the standard formatting stuff from home.html so that all
+that is left is the unique content for the hompage, plus the special "extends" and
+"block content" / "endblock" lines.
+(NB: django starts looking in templates directory, so we have to specify "main/header.html")
+
+e) Here's the new header.html:
+
+---
+
+<head>
+    {% load static %}
+    <link href="{% static 'tinymce/css/prism.css' %}" rel="stylesheet">
+    
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script> 
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-wrapper">
+            <a href="#" class="brand-logo">My Tutorials App</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li><a href="/">Home</a></li>
+                <li><a href="/register">Register</a></li>
+                <li><a href="/login">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    {% block content %}
+    {% endblock %}
+
+</body>
+
+<script src="{% static 'tinymce/js/prism.js' %}"></script>
+---
+
+f) And here's the new home.html:
+
+---
+
+{% extends "main/header.html" %}
+
+{% block content %}
+    <div class="row">
+        {% for tut in tutorials %}
+            <div class="col s12 m6 l4">
+                <div class="card blue-grey darken-1">
+                    <div class="card-content white-text">
+                        <span class="card-title">{{tut.tutorial_title}}</span>
+                        <p style="font-size: 70%">{{tut.tutorial_published}}</p>
+                        <p>{{tut.tutorial_content|safe}}</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="#">Visit</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+---
+
+
+23. Customizing the CSS
+
+a) Go to https://materializecss.com/getting-started.html and download the Sass
+which contains the source SCSS files.
+Unzip the archive.
+
+b) Install Koala, used to compile the SCSS files into CSS:
+https://www.techspot.com/downloads/6736-koala-app.html
+
+c) Now we'll change the base color of our pages from materialize-red to blue:
+- In the unzipped materialize\src folder, go to sass\components and open the 
+_variables.css in a text editor.
+- In Colors section, change the primary color from materialize-red to the following:
+$primary-color: color("blue", "lighten-2") !default;
+- Save
+
+d) Now we need to compile it. Open Koala and open the materialize-src folder. Click
+on the green file and click Compile. This will create a new folder containing a file
+called materialize.css
+
+e) Create a new css folder in a static folder as follows:
+mysite\main\static\main\css and place the new materialize.css there
+
+f) Go to header.html and change the <head> section to look like the following:
+
+---
+
+<head>
+    {% load static %}
+    <link href="{% static 'tinymce/css/prism.css' %}" rel="stylesheet">
+    
+    <!-- Compiled and minified CSS -->
+    <link href="{% static 'main/css/materialize.css' %}" rel="stylesheet">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script> 
+</head>
+
+---
+
+g) Restart the webserver and refresh page to see changes!
+
+
+
+24. User registration
+
+a) First we'll create a new page for user registration.
+- Make a copy of home.html and call it register.html
+- Make it look like this:
+
+---
+
+{% extends "main/header.html" %}
+
+{% block content %}
+
+    <form method="POST">
+    
+        {% csrf_token %} <!-- provides defence against Cross Site Request Forgery. Use for all forms -->
+        {{form}} <!-- We create the actual form in django in views.py -->
+        
+    </form>
+
+    If you already have an account, <a href="/login">login</a> instead.
+
+{% endblock %}
+
+---
+
+b) Now, we need to create a view in views.py as follows:
+
+---
+
+from django.shortcuts import render # to render a template
+from django.http import HttpResponse # to render raw HTML
+from .models import Tutorial
+from django.contrib.auth.forms import UserCreationForm # THIS IS NEW
+
+# Create your views here.
+def homepage(request):
+    
+    # page_content = """ Hello, world! """
+     # return HttpResponse(page_content)
+     
+     return render(request=request, # to be able to reference things like user details etc
+                   template_name="main/home.html", # where to find the template to be rendered
+                   context={"tutorials": Tutorial.objects.all}) # tutorials is variable name passed to template
+
+def register(request): # THIS IS NEW
+    
+    form = UserCreationForm
+    return render(request=request,
+                  template_name="main/register.html",
+                  context={"form": form})
+                  
+---
+
+c) Now, we need to create the Controller, in urls.py in the main folder:
+
+---
+
+from django.urls import path
+from . import views
+
+app_name = "main" # used for creating custom urls, so don't have to hard code urls
+
+urlpatterns = [
+    path("", views.homepage, name="homepage"),
+    path("register/", views.register, name="register"), # THIS IS NEW
+]
+
+---
+
+d) Create register button and some cosmetic changes:
+- In header.html lets add a container so the content doesn't start from the left margin,
+and add a break to create some space between the nav bar and start of content:
+
+---
+
+    <div class="container">
+        <br>
+        {% block content %}
+        {% endblock %}
+    </div>
+
+---
+
+- Now we'll add a register button and some additional styling to register.html:
+
+---
+
+{% extends "main/header.html" %}
+
+{% block content %}
+
+    <form method="POST">
+    
+        {% csrf_token %} <!-- provides defence against Cross Site Request Forgery. Use for all forms -->
+        {{form.as_p}} <!-- We create the actual form in django in views.py -->
+        <!-- .as_table and .as_ul are other options -->
+        
+        <button class="btn" style="background-color: yellow; color: blue;" type="submit">register</button>
+        
+    </form>
+
+    If you already have an account, <a href="/login"><strong>login</strong></a> instead.
+
+{% endblock %}
+
+---
+
+e) Now we need to handle the POST request when the user submits the register form
+to our database. We do this in views.py register functions as follows:
+
+---
+# THESE ARE JUST THE CHANGED LINES!
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout, authenticate
+
+def register(request): # NB: The default request is a GET request
+    
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid(): # check the form filled out correctly
+            user = form.save() # commit the new user record to the database
+            login(request=request, user=user) # so new user doesn't have to login again afer registering
+            return redirect("main:homepage") # arg using the variable names created in urls.py in main
+        else:
+            # Implement a short-term error handling solution:
+            for msg in form.error_messages: # form.error_messages is a dict
+                print(form.error_messages[msg]) # prints errors to console
+
+    form = UserCreationForm
+    return render(request=request, # This handles the default GET request
+                  template_name="main/register.html",
+                  context={"form": form})
+
+---
+
+f) Now, try to create a new user then log in to admin to check looks good.
+(nb: password123 will not work as a valid password!)
+- newuser1, tomato123
+- newuser2, tomato456
+- newuser3, tomato789
+
+
+
+25. Messages to provide user feedback
+
+a) First, we update views.py as folows:
+(nb: in views.py we create and store the message until it is served, but we
+cause the message to be displayed in a template. In our case, we will display
+it in header.html)
+
+---
+
+from django.shortcuts import render, redirect # to render a template and redirect to another template
+from django.http import HttpResponse # to render raw HTML
+from .models import Tutorial
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login, logout, authenticate
+from django.contrib import messages
+
+# Create your views here.
+def homepage(request):
+    
+    # page_content = """ Hello, world! """
+     # return HttpResponse(page_content)
+     
+     return render(request=request, # to be able to reference things like user details etc
+                   template_name="main/home.html", # where to find the template to be rendered
+                   context={"tutorials": Tutorial.objects.all}) # tutorials is variable name passed to template
+
+
+def register(request): # NB: The default request is a GET request
+    
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid(): # check the form filled out correctly
+            user = form.save() # commit the new user record to the database
+            username = form.cleaned_data.get("username") # django has some built-in field preprocessing
+            messages.success(request, f"New Account Created: {username}") # creates, but does not display the message
+            login(request=request, user=user) # so new user doesn't have to login again afer registering
+            messages.info(request, f"You are now logged in as: {username}")
+            return redirect("main:homepage") # arg using the variable names created in urls.py in main
+        else:
+            # Implement a short-term error handling solution:
+            for msg in form.error_messages: # form.error_messages is a dict
+                # print(form.error_messages[msg]) # prints errors to console
+                messages.error(request, f"{msg}: {form.error_messages[msg]}")
+
+    form = UserCreationForm
+    return render(request=request, # This handles the default GET request
+                  template_name="main/register.html",
+                  context={"form": form})
+
+---
+
+b) Now we need to display the messages. We'll display them through header.html
+but note they could be displayed through another template. By displaying them
+through header.html we are creating a site-wide solution for messages though.
+
+Update header.html as follows:
+
+---
+
+<head>
+    {% load static %}
+    <link href="{% static 'tinymce/css/prism.css' %}" rel="stylesheet">
+    
+    <!-- Compiled and minified CSS -->
+    <link href="{% static 'main/css/materialize.css' %}" rel="stylesheet">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script> 
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-wrapper">
+            <a href="#" class="brand-logo">My Tutorials App</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li><a href="/">Home</a></li>
+                <li><a href="/register">Register</a></li>
+                <li><a href="/login">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Following block will display any messages created in the application -->
+    <!-- displayLength is in milliseconds, so 2000 = 2 seconds -->
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'success'%}
+                <script>M.toast({html: "{{message}}", classes: 'green rounded', displayLength:2000});</script>
+            {% elif message.tags == 'info'%}
+                <script>M.toast({html: "{{message}}", classes: 'blue rounded', displayLength:2000});</script>
+            {% elif message.tags == 'warning'%}
+                <script>M.toast({html: "{{message}}", classes: 'orange rounded', displayLength:10000});</script>
+            {% elif message.tags == 'error'%}
+                <script>M.toast({html: "{{message}}", classes: 'red rounded', displayLength:10000});</script>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    
+    <div class="container">
+        <br>
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+
+<script src="{% static 'tinymce/js/prism.js' %}"></script>
+
+---
+
+c) Let's create a new user to test the messages are working:
+- newuser4, tomato012
+
+
+
+26. Change navigation bar after user logged in:
+In the next section, we will streamline the header.html file by moving
+certain content into its own file and make use of "include" syntax. For now,
+let's make changes directly in header.html.
+
+a) Change the navbar section to the following:
+
+---
+    <nav>
+        <div class="nav-wrapper">
+            <a href="#" class="brand-logo">My Tutorials App</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li><a href="/">Home</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="/account">{{user.username}}</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                {% else %}
+                    <li><a href="/register">Register</a></li>
+                    <li><a href="/login">Login</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+---
+
+b) Refresh the homepage to see that a logged in user now has the different menubar
+items.
+
+
+27. Streamline header.html:
+We will put the navbar and messages in their own files.
+
+a) Create a new folder called "inlcudes" in the following location:
+mysite\main\templates\main\includes
+
+b) In this folder we will create a new file called "navbar.html" and insert all
+the code from <nav> to </nav> that was in header.html.
+
+c) In header.html, where the navbar code was previously, we insert the following:
+(note the path starts from the templates folder)
+
+{% include "main/includes/navbar.html" %}
+
+d) Repeat the same process for messages, creating the new messages.html in the
+includes folder.
+
+{% include "main/includes/messages.html" %}
+
+e) Refresh the homepage to ensure no errors. If no errors then all above worked
+successfully!
+
+
+28. Let's register another new user to test all the new functionality:
+- newuser5, tomato345 
+
+
+
+29. Logout
+Let's code this next. We don't even need a template, so its relatively straightforward.
+
+a) add to the urlpatterns in urls.py as follows:
+
+---
+
+urlpatterns = [
+    path("", views.homepage, name="homepage"),
+    path("register/", views.register, name="register"),
+    path("logout/", views.logout_request, name="logout"), # we use logout_request as their is a django method called logout that we already imported!
+]
+
+---
+
+b) Create the view in views.py:
+
+---
+
+def logout_request(request):
+    logout(request)
+    messages.info(request, "Logged out successfully!")
+    return redirect("main:homepage")
+
+---
+
+c) Try the new Logout button to make sure it worked!
+
+
+30. Login
+
+a) add to the urlpatterns in urls.py as follows:
+
+---
+
+urlpatterns = [
+    path("", views.homepage, name="homepage"),
+    path("register/", views.register, name="register"),
+    path("logout/", views.logout_request, name="logout"), # we use logout_request as their is a django method called logout that we already imported!
+    path("login/", views.login_request, name="login"), # use login_request for same reason as above
+]
+---
+
+b) Create the view in views.py, including handling of GET and POST requests:
+
+---
+
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm # NEW
+
+def login_request(request):
+    
+    if request.method == "POST":
+        form = AuthenticationForm(request=request,
+                                  data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
+            user = authenticate(username=username,
+                                password=password)
+            if user is not None:
+                login(request, user)
+                messages.info(request, f"You are now logged in as: {username}")
+                return redirect("main:homepage")
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+    
+    form = AuthenticationForm()
+    return render(request=request,
+                  template_name="main/login.html",
+                  context={"form": form})
+---
+
+c) Create the login.html template:
+(copy the register.html template and modify accordingly)
+
+---
+
+{% extends "main/header.html" %}
+
+{% block content %}
+
+    <form method="POST">
+    
+        {% csrf_token %} <!-- provides defence against Cross Site Request Forgery. Use for all forms -->
+        {{form.as_p}} <!-- We import the pre-built user login form from django in views.py -->
+        <!-- .as_table and .as_ul are other options -->
+        
+        <button class="btn" style="background-color: yellow; color: blue;" type="submit">login</button>
+        
+    </form>
+
+    If you don't already have an account, <a href="/register"><strong>register</strong></a> instead.
+
+{% endblock %}
+
+---
+
+
+31. Extending the UserCreationForm (enhancing a pre-buit django form):
+(We want to capture the users email address in case they forget their password
+and we need to automatically contact them).
+
+a) Create a new file forms.py in the main folder and populate as follows:
+
+---
+
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+
+
+class NewUserForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    
+    class Meta():
+        model = User
+        fields = ("username",
+                  "email",
+                  "password1",
+                  "password2")
+    
+    def save(self, commit=True):
+        user = super(NewUserForm, self).save(commit=False)
+        user.email = self.cleaned_data["email"]
+        if commit:
+            user.save()
+        return user
+
+---
+
+b) Now, in views.py we need to replace any mention of UserCreationForm
+with our new NewUserForm. So change the following:
+
+---
+
+from django.contrib.auth.forms import AuthenticationForm
+from .forms import NewUserForm
+
+def register(request): # NB: The default request is a GET request
+    
+    if request.method == "POST":
+        form = NewUserForm(request.POST)
+        if form.is_valid(): # check the form filled out correctly
+            user = form.save() # commit the new user record to the database
+            username = form.cleaned_data.get("username") # django has some built-in field preprocessing
+            messages.success(request, f"New Account Created: {username}") # creates, but does not display the message
+            login(request=request, user=user) # so new user doesn't have to login again afer registering
+            messages.info(request, f"You are now logged in as: {username}")
+            return redirect("main:homepage") # arg using the variable names created in urls.py in main
+        else:
+            # Implement a short-term error handling solution:
+            for msg in form.error_messages: # form.error_messages is a dict
+                # print(form.error_messages[msg]) # prints errors to console
+                messages.error(request, f"{msg}: {form.error_messages[msg]}")
+
+    form = NewUserForm
+    return render(request=request, # This handles the default GET request
+                  template_name="main/register.html",
+                  context={"form": form})
+
+---
+
+c) Register a new user to ensure the email field appears and check it looks good
+through the admin module!
+
+NB: earlier I created:
+newuser6, Josephine15
+
+Now, lets create:
+newuser7, tomato123
+
+
+
+32. Extending models and creating joins with foreign keys
+
+Each of our tutorials will belong to a series and each series will belong to 
+a category. So, we will create separate tables for TutorialCategory and 
+TutorialSeries to store the data in a relational format. Both TutorialCategories
+and TutorialSeries will have their own properties.
+The tables will be related using foreign keys. We create the new tables and the 
+relationships in models.py:
+
+a) Create the TutorialCategory model:
+
+---
+
+class TutorialCategory(models.Model):
+    tutorial_category = models.CharField(max_length=200)
+    category_summary = models.CharField(max_length=200)
+    category_slug = models.CharField(max_length=200) # a slug is place for a url
+    
+    class Meta: # Anthing that is not a field name is metadata, and goes here
+        verbose_name_plural = "Categories" # This sets the name that appears in admin module
+    
+    def __str__(self):
+        return self.tutorial_category
+
+---
+
+b) Create the TutorialSeries model:
+
+---
+
+class TutorialSeries(models.Model):
+    tutorial_series = models.CharField(max_length=200)
+    tutorial_category = models.ForeignKey(TutorialCategory,
+                                          default=1, # required in case of deletion of a Category
+                                          verbose_name="Category",
+                                          on_delete=models.SET_DEFAULT)
+    series_summary = models.CharField(max_length=200)
+    
+    class Meta:
+        verbose_name_plural = "Series"
+    
+    def __str__(self):
+        return self.tutorial_series
+
+---
+
+c) Lastly, we updated the foreign key in Tutorial model so that a Tutorial becomes
+part of a Series. And we add a tutorial_slug field to store a url for the 
+tutorial:
+
+---
+
+class Tutorial(models.Model): # Tutorial inherits from the class models.Model
+    
+    # Create columns for the Tutorial table https://docs.djangoproject.com/en/3.0/ref/models/fields/
+    # A primary key is created by default, although we could set it to be one of the fields
+    # below if we wanted to.
+    tutorial_title = models.CharField(max_length=200) # used for short strings, e.g. categories
+    tutorial_content = models.TextField() # used for longer text
+    tutorial_published = models.DateTimeField("date published", default=datetime.now())
+    tutorial_series = models.ForeignKey(TutorialSeries,
+                                          default=1, # required in case of deletion of a Series
+                                          verbose_name="Series",
+                                          on_delete=models.SET_DEFAULT)
+    tutorial_slug = models.CharField(max_length=200,
+                                     default=1) # required as we already have some tutorial instances!
+    
+    def __str__(self):
+        return self.tutorial_title # This is what gets return when we print the instance
+
+---
+
+d) As we've updated models, we now need to:
+- makemigrations
+- migrate
+
+e) To make new models and model changes appear in the admin screen we need to 
+update the admin.py file in main folder as below:
+(nb: the TutorialAdmin model fields were updated to include the new fields:
+tutorial_series and tutorial_slug)
+
+---
+
+from django.contrib import admin
+from .models import Tutorial, TutorialCategory, TutorialSeries
+from tinymce.widgets import TinyMCE
+from django.db import models
+
+# Register your models here.
+
+class TutorialAdmin(admin.ModelAdmin):
+    
+    fieldsets = [
+            ("Metadata", {"fields":["tutorial_title", "tutorial_series", "tutorial_slug", "tutorial_published"]}),
+            ("Content", {"fields":["tutorial_content"]})
+        ]
+    
+    formfield_overrides = {
+            models.TextField: {"widget": TinyMCE()}
+        }
+
+admin.site.register(TutorialCategory)
+admin.site.register(TutorialSeries)
+admin.site.register(Tutorial, TutorialAdmin)
+
+---
+
+f) Now we have the models and admin page updated, we will go ahead and add
+a bunch of Categories, Series and Tutorials through the admin page so we have
+more data to play with as we develop further.
+
+
+33. Change homepage to display Categories instead of individual Tutorials:
+
+a) Update views.py as follows (just showing new or changes below):
+
+---
+
+from .models import Tutorial, TutorialCategory, TutorialSeries
+
+def single_slug(request, single_slug):
+    """"
+        Determine whether single_slug relates to a Category or a Tutorial
+        Params:
+            - single_slug: e.g. in  "localhost:8000/admin/", admin is the single_slug
+    """
+    categories = [c.category_slug for c in TutorialCategory.objects.all()]
+    if single_slug in categories:
+        return HttpResponse(f"{single_slug} is a category!!!")
+    
+    tutorials = [t.tutorial_slug for t in TutorialSeries.objects.all()]
+    if single_slug in tutorials:
+        return HttpResponse(f"{single_slug} is a tutorial!!!")
+    
+    return HttpResponse(f"{single_slug} is not a category or a tutorial!!!")
+
+
+def homepage(request):
+     
+     return render(request=request, # to be able to reference things like user details etc
+                   template_name="main/categories.html", # where to find the template to be rendered
+                   context={"categories": TutorialCategory.objects.all}) # tutorials is variable name passed to template
+                   
+---
+
+b) Create the new categories.html template that will be used for the homepage:
+
+---
+
+{% extends 'main/header.html' %}
+
+{% block content %}
+
+    <div class="row">
+        {% for cat in categories %}
+            <div class="col s12 m6 l4">
+                <a href="{{cat.category_slug}}", style="color:#000">
+                    <div class="card hoverable">
+                        <div class="card-content">
+                            <div class="card-title">{{cat.tutorial_category}}</div>
+                            <p>{{cat.category_summary}}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+---
+
+c) Need to update the urls.py as follows:
+
+---
+
+from django.urls import path
+from . import views
+
+app_name = "main" # used for creating custom urls, so don't have to hard code urls
+
+urlpatterns = [
+    path("", views.homepage, name="homepage"),
+    path("register/", views.register, name="register"),
+    path("logout/", views.logout_request, name="logout"), # we use logout_request as their is a django method called logout that we already imported!
+    path("login/", views.login_request, name="login"), # use login_request for same reason as above
+    path("<single_slug>/", views.single_slug, name="single_slug"), # get the single_slug from url (using '<>' syntax) and pass it as a variable to the views.single_slug function
+]
+
+---
+
+
+34. Create new page to display the first tutorial in each series after clicking
+on a category:
+*** Note that this was a bit tricky and had to diverge on a couple of things ***
+*** away from the tutorial to make it work! ***
+
+a) Update single_slug function in views.py as follows (all per tutorial instructions):
+
+---
+
+def single_slug(request, single_slug):
+    """"
+        Determine whether single_slug relates to a Category or a Tutorial
+        Params:
+            - single_slug: e.g. in  "localhost:8000/admin/", admin is the single_slug
+    """
+    categories = [c.category_slug for c in TutorialCategory.objects.all()]
+    if single_slug in categories:
+        
+        # Get the series that relate to the category that was selected:
+        matching_series = TutorialSeries.objects.filter(tutorial_category__category_slug=single_slug)
+        
+        # Find the tutorials that are part 1s from the matching series and
+        # store each matching series object and the first tutorial of each series in a dict:
+        series_urls = {}
+        for m in matching_series.all():
+            part_one = Tutorial.objects.filter(tutorial_series__tutorial_series=m.tutorial_series).earliest("tutorial_published")
+            series_urls[m] = part_one.tutorial_slug
+        
+        return render(request=request,
+                      template_name="main/category.html",
+                      context={"part_ones": series_urls})
+    
+    tutorials = [t.tutorial_slug for t in Tutorial.objects.all()]
+    if single_slug in tutorials:
+        return HttpResponse(f"{single_slug} is a tutorial!!!")
+    
+    return HttpResponse(f"{single_slug} is not a category or a tutorial!!!")
+
+---
+
+b) Create the new category.html page to display each of the series contained in the
+category that was clicked:
+*** note the additional fwd slash in the href ***
+
+---
+
+{% extends 'main/header.html' %}
+
+{% block content %}
+
+    <div class="row">
+        {% for tut, partone in part_ones.items %}
+
+            <div class="col s12 m6 l4">
+                <a href="/{{partone}}", style="color:#000"> <!-- fwd slash at start not in tutorial instructions! -->
+                    <div class="card hoverable">
+                        <div class="card-content">
+                            <div class="card-title">{{tut.tutorial_series}}</div>
+                            <!--<p style="font-size:70%">Published {{tut.tutorial_published}}</p>-->
+                            <p>{{tut.series_summary}}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+---
+
+c) Update urls.py in main folder to include the link to admin page as
+the mysite urls.py was not being triggered until after this one.
+Also add a trailing forward slash after <single_slug>:
+*** Both these changes diverge from the tutorial instructions!  ***
+
+---
+
+urlpatterns = [
+    path("", views.homepage, name="homepage"),
+    path("admin/", admin.site.urls), # added admin here due to order urls are checked
+    path("register/", views.register, name="register"),
+    path("logout/", views.logout_request, name="logout"), # we use logout_request as their is a django method called logout that we already imported!
+    path("login/", views.login_request, name="login"), # use login_request for same reason as above
+    path("<single_slug>/", views.single_slug, name="single_slug"), # get the single_slug from url (using '<>' syntax) and pass it as a variable to the views.single_slug function
+]
+---
+
+
+d) Refresh website to check that after clicking on a category we are now showing
+a list of the series belonging to that category. Also check existing navbar 
+and admin page functionality working as expected.
+
+
+35. Create page to display the first tutorial in series after a series
+has been clicked:
+
+a) First lets change the part of single_slug function in views.py that renders
+the first tutorial in the series that was clicked:
+
+---
+
+tutorials = [t.tutorial_slug for t in Tutorial.objects.all()]
+    if single_slug in tutorials:
+        this_tutorial = Tutorial.objects.get(tutorial_slug=single_slug) # get returns an object. filter returns a list.
+        return render(request=request,
+                      template_name="tutorial.html",
+                      context={"tutorial": this_tutorial})
+---
+
+b) Now we need to create tutorial.html as follows:
+
+---
+
+{% extends 'main/header.html' %}
+
+{% block content %}
+
+    <div class="row">
+
+        <div class="col s12, m8, l8">
+            <h3>{{tutorial.tutorial_title}}</h3>
+            <p style="font-size:70%">Published {{tutorial.tutorial_published}}</p>
+            {{tutorial.tutorial_content|safe}}
+        </div>
+
+    </div>
+
+{% endblock %}
+
+---
+
+c) Refresh the site to check all working as expected!
+
+
+36. Add sidebar on tutorial.html to display other tutorials in the series:
+
+a) First, we update the relevant part of single_slug function as follows:
+
+---
+
+tutorials = [t.tutorial_slug for t in Tutorial.objects.all()]
+if single_slug in tutorials:
+    this_tutorial = Tutorial.objects.get(tutorial_slug=single_slug) # get returns an object. filter returns a list.
+    tutorials_from_series = Tutorial.objects.filter(tutorial_series__tutorial_series=this_tutorial.tutorial_series).order_by("tutorial_published")
+    this_tutorial_idx = list(tutorials_from_series).index(this_tutorial) # to highlight current tutorial in sidebar
+    
+    return render(request=request,
+                  template_name="main/tutorial.html",
+                  context={"tutorial": this_tutorial,
+                           "sidebar": tutorials_from_series,
+                           "this_tutorial_idx": this_tutorial_idx})
+---
+
+b) Now we update tutorial.html with the sidebar code:
+
+---
+
+{% extends 'main/header.html' %}
+
+{% block content %}
+
+    <div class="row">
+
+        <div class="col s12, m8, l8">
+            <h3>{{tutorial.tutorial_title}}</h3>
+            <p style="font-size:70%">Published {{tutorial.tutorial_published}}</p>
+            {{tutorial.tutorial_content|safe}}
+        </div>
+
+        <div class="col s12 m4 l4">
+            <ul class="collapsible popout">
+                {% for tutorial in sidebar %}
+                    {% if forloop.counter0 == this_tutorial_idx %}
+                        <li class="active">
+                            <div class="collapsible-header">{{tutorial.tutorial_title}}<br>(currently viewing)</div>
+                        </li>
+                    {% else %}
+                        <li>
+                            <div class="collapsible-header">{{tutorial.tutorial_title}}</div>
+                            <div class="collapsible-body">
+                                <p><a href="/{{tutorial.tutorial_slug}}"><button class="btn waves-effect waves-light right-align" style="background-color:yellow; color:black">Go</button></a></p>
+
+                            </div>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+
+{% endblock %}
+
+---
+
+c) To make the javascript in the sidebar code in tutorial.html we need to "initialize"
+the javascript in header.html as follows:
+(nb: the javascript from materialize we've been using so far did not require 
+the initialize step, but some of the more fancy javascript, like the navbar,
+requires this step)
+
+Just add this new script tag to the bottom of the file:
+
+---
+<script>M.AutoInit();</script> <!-- This initializes all materialize javascript -->
+---
+
+d) Refresh the site and test the navbar functionality.
+
+
